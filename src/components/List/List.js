@@ -74,7 +74,9 @@ function List() {
                         }
                     </tbody>
                 </Table>
-                <Button variant="outline-dark" block onClick={() => setModalData({action:'add'})}>+</Button>{' '}
+
+                {/* Disabled as add recipe is not complete (no ingredients and directions) */}
+                {/* <Button variant="outline-dark" block onClick={() => setModalData({action:'add'})}>+</Button>{' '} */}
 
                 <RecipeModal data={modalData} />
             </div>

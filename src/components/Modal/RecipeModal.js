@@ -30,6 +30,7 @@ class RecipeModal extends React.PureComponent{
         e.preventDefault();
         const data = new FormData(e.target);
 
+        // NOTE: Not finished (no ingredients and directions)
         let newRecipe = {
             'uuid': this.generateUUID(),
             'title': data.get('title'),
@@ -93,13 +94,12 @@ class RecipeModal extends React.PureComponent{
                         {specialOffer.text}
                     </li>
                 </ul>
-                : ''} 
-            </>;
+                : null
+            } </>;
         }
     }
 
     checkIfEmpty(obj) {
-       console.log(Object.keys(obj).length !== 0);
        return Object.keys(obj).length !== 0;
     }
 
