@@ -148,6 +148,7 @@ class RecipeModal extends React.PureComponent{
                             <Card.Text className="text-center">
                                 <h5>{this.props.data.recipe.description}</h5>
                                 <span>Preparation Time:{' '} <Badge variant="secondary">{this.props.data.recipe.prepTime} mins</Badge></span> <br/>
+                                <span>Cook Time:{' '} <Badge variant="secondary">{this.props.data.recipe.cookTime} mins</Badge></span> <br/>
                                 <span>Servings:{' '} <Badge variant="secondary">{this.props.data.recipe.servings}</Badge></span>
                             </Card.Text>
                             <Accordion>
