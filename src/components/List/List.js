@@ -43,13 +43,13 @@ function List() {
                     <thead>
                         <tr>
                             <td key="recipe-title">
-                                <a href="#" className="" onClick="">Title</a>
+                                <a href="#" className="">Title</a>
                             </td>
                             <td key="recipes-desc">
-                                <a href="#" className="" onClick="">Description</a>
+                                <a href="#" className="">Description</a>
                             </td>
                             <td key="recipes-servings">
-                                <a href="#" className="" onClick="">Servings</a>
+                                <a href="#" className="">Servings</a>
                             </td>
                             {/* <td key="recipes-action">
                                 Action
@@ -68,12 +68,13 @@ function List() {
                                     <Button variant="warning" onClick={() => setModalData({recipe, specials, action:'delete'})}>Delete</Button>{' '}
                                 </td> */}
                             </tr>
-                        ))
-                        :
-                        <tr className="no-recipes-available"><td colSpan='3'></td></tr>
+                        )) : (
+                            <tr className="no-recipes-available"><td colSpan='3'></td></tr>
+                        )
                         }
                     </tbody>
                 </Table>
+                <Button variant="outline-dark" block onClick={() => setModalData({action:'add'})}>+</Button>{' '}
 
                 <RecipeModal data={modalData} />
             </div>

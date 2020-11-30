@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Modal, Accordion, Badge, Card } from 'react-bootstrap'
+import { Button, Modal, Accordion, Badge, Card, Form, Col } from 'react-bootstrap'
 import Moment from 'react-moment';
 
 
@@ -12,10 +12,12 @@ class RecipeModal extends React.PureComponent{
             showHide : false,
             submitBtnText : 'Save'
         }
+
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
     
     componentWillReceiveProps(props){
-        if (!this.state.showHide && props.data.recipe) {
+        if (!this.state.showHide && props.data.action) {
             this.handleModal();
         }
     }
@@ -24,12 +26,39 @@ class RecipeModal extends React.PureComponent{
         this.setState({ showHide: !this.state.showHide});
     }
 
-    handleSubmit() {
-        this.handleModal();
+    handleSubmit(e) {
+        e.preventDefault();
+        const data = new FormData(e.target);
+
+        let newRecipe = {
+            'uuid': this.generateUUID(),
+            'title': data.get('title'),
+            'description': data.get('description'),
+            'servings': data.get('servings'),
+            'prepTime': data.get('prepTime'),
+            'cookTime': data.get('cookTime'),
+            'images': {},
+            'postDate': Date.now(),
+            'editDate': Date.now(),
+            'ingredients': {},
+            'directions': {}
+        };
+
+        fetch('http://localhost:3001/recipes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newRecipe)
+        });
+    }
+
+    submitForm() {
+        this.handleSubmit();
     }
 
     handleModalTitle() {
-        let title = '';
+        let title = this.Capitalize(this.props.data.action);
 
         if (this.props.data.recipe) {
             title = this.props.data.recipe.title;
@@ -69,6 +98,11 @@ class RecipeModal extends React.PureComponent{
         }
     }
 
+    checkIfEmpty(obj) {
+       console.log(Object.keys(obj).length !== 0);
+       return Object.keys(obj).length !== 0;
+    }
+
     Capitalize(str){
         if (!str) {
             return;
@@ -77,9 +111,26 @@ class RecipeModal extends React.PureComponent{
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
+    generateUUID() {
+        var d = new Date().getTime();
+        var d2 = (performance && performance.now && (performance.now()*1000)) || 0;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16;
+            if(d > 0){
+                r = (d + r)%16 | 0;
+                d = Math.floor(d/16);
+            } else {
+                r = (d2 + r)%16 | 0;
+                d2 = Math.floor(d2/16);
+            }
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    }
+
     render(){
         let myComponent;
-        if(this.props.data.recipe) {
+
+        if(this.props.data.action) {
             myComponent =
             <Modal 
                 show={this.state.showHide} 
@@ -89,7 +140,8 @@ class RecipeModal extends React.PureComponent{
                 <Modal.Header closeButton onClick={() => this.handleModal()}>
                 <Modal.Title>{this.handleModalTitle()}</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>    
+                <Modal.Body>
+                    { this.props.data.action !== 'add' ? (
                     <Card>
                         <Card.Img variant="top" src="https://via.placeholder.com/500x250" />
                         <Card.Body>
@@ -99,62 +151,99 @@ class RecipeModal extends React.PureComponent{
                                 <span>Servings:{' '} <Badge variant="secondary">{this.props.data.recipe.servings}</Badge></span>
                             </Card.Text>
                             <Accordion>
-                                <Card>
-                                    <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                                        Ingredients
-                                    </Accordion.Toggle>
-                                    </Card.Header>
-                                    <Accordion.Collapse eventKey="0">
-                                        <Card.Body>
-                                            <ul>
-                                                { this.props.data.recipe.ingredients.length !== 0 ? 
-                                                this.props.data.recipe.ingredients.map(ingredient => (
-                                                    <li>
-                                                        { this.displayIngredient(ingredient) }
-                                                    </li>
-                                                ))
-                                                :
-                                                <li></li>
-                                                }
-                                            </ul>
-                                        </Card.Body>
-                                    </Accordion.Collapse>
-                                </Card>
-                                <Card>
-                                    <Card.Header>
-                                    <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                                        Directions
-                                    </Accordion.Toggle>
-                                    </Card.Header>
-                                    <Accordion.Collapse eventKey="1">
-                                        <Card.Body>
-                                            <ul>
-                                                { this.props.data.recipe.directions.length !== 0 ? 
-                                                this.props.data.recipe.directions.map(direction => (
-                                                    <li>
-                                                        {direction.instructions} {direction.optional ? '(Optional)' : ''}
-                                                    </li>
-                                                ))
-                                                :
-                                                <li></li>
-                                                }
-                                            </ul>
-                                        </Card.Body>
-                                    </Accordion.Collapse>
-                                </Card>
+                                { this.checkIfEmpty(this.props.data.recipe.ingredients) ? (
+                                    <Card>
+                                        <Card.Header>
+                                        <Accordion.Toggle as={Button} variant="link" eventKey="0">
+                                            Ingredients
+                                        </Accordion.Toggle>
+                                        </Card.Header>
+                                        <Accordion.Collapse eventKey="0">
+                                            <Card.Body>
+                                                <ul>
+                                                    { this.props.data.recipe.ingredients.map(ingredient => (
+                                                        <li>
+                                                            { this.displayIngredient(ingredient) }
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </Card.Body>
+                                        </Accordion.Collapse>
+                                    </Card>
+                                    ) : (
+                                        null
+                                    )
+                                }
+                                
+                                { this.checkIfEmpty(this.props.data.recipe.directions) ? (
+                                    <Card>
+                                        <Card.Header>
+                                        <Accordion.Toggle as={Button} variant="link" eventKey="1">
+                                            Directions
+                                        </Accordion.Toggle>
+                                        </Card.Header>
+                                        <Accordion.Collapse eventKey="1">
+                                            <Card.Body>
+                                                <ul>
+                                                    { this.props.data.recipe.directions.map(direction => (
+                                                        <li>
+                                                            {direction.instructions} {direction.optional ? '(Optional)' : ''}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </Card.Body>
+                                        </Accordion.Collapse>
+                                    </Card>
+                                    ) : (
+                                        null
+                                    )
+                                }
+                                
                             </Accordion>
                         </Card.Body>
-                        <Card.Footer className="text-muted text-right"><Moment fromNow>
-                                 {this.props.data.recipe.postDate}</Moment></Card.Footer>
+                        <Card.Footer className="text-muted text-right">
+                            <Moment fromNow>{this.props.data.recipe.postDate}</Moment>
+                        </Card.Footer>
                     </Card>
+                    ) : (
+                        <Form onSubmit={this.handleSubmit} id="frmAddRecipe">
+                            <Form.Group controlId="formRecipeTitle">
+                                <Form.Label>Recipe</Form.Label>
+                                <Form.Control type="text" name="title" placeholder="Enter Recipe" />
+                            </Form.Group>
+                            <Form.Group controlId="formRecipeDesc">
+                                <Form.Label>Description</Form.Label>
+                                <Form.Control type="text" name="description" placeholder="Enter Description" />
+                            </Form.Group>
+                            <Form.Row>
+                                <Col>
+                                    <Form.Group controlId="formServing">
+                                        <Form.Label>Servings</Form.Label>
+                                        <Form.Control type="number" name="servings" placeholder="Enter Servings" />
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group controlId="formPrepTime">
+                                        <Form.Label>Prep Time</Form.Label>
+                                        <Form.Control type="number" name="prepTime" placeholder="Enter Prep Time" />
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group controlId="cookTime">
+                                        <Form.Label>Cook Time</Form.Label>
+                                        <Form.Control type="number" name="cookTime" placeholder="Enter Cook Time" />
+                                    </Form.Group>
+                                </Col>
+                            </Form.Row>
+                        </Form>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={() => this.handleModal()}>
                     Close
                 </Button>
                 { this.props.data.action !== 'view' &&
-                    <Button variant="primary" onClick={() => this.handleSubmit()}>
+                    <Button variant="primary" type="submit" form="frmAddRecipe">
                         { this.Capitalize(this.props.data.action) }
                     </Button>
                 }
@@ -163,6 +252,7 @@ class RecipeModal extends React.PureComponent{
         } else {
             myComponent = null
         }
+
         return (
             <div>
                 {myComponent}
